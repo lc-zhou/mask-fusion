@@ -96,7 +96,7 @@ ge_model.compile(loss={'activation_1':'mse','activation_2':'binary_crossentropy'
 ge_model.summary()
 
 print('load data for training')
-Generator_Train_paths = gen_flist('/home/zlc/masks-fusion/data_txt/tr.txt')
+Generator_Train_paths = gen_flist('your path/masks-fusion/data_txt/tr.txt')
 
 print('training')
 for epoch_g in np.arange(1,epoch+1):
@@ -104,7 +104,7 @@ for epoch_g in np.arange(1,epoch+1):
     random.shuffle(Generator_Train_paths)
     g = generator(Generator_Train_paths)
     ge_model.fit_generator(g, steps_per_epoch=num_sample, epochs=1, verbose=1, max_queue_size=1, workers=1)
-    ge_model.save('/home/zlc/masks-fusion/model/test1.h5')
+    ge_model.save('your path/masks-fusion/model/test1.h5')
 
 
 

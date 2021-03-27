@@ -80,7 +80,7 @@ def Sp_and_phase(signal, Normalization=False):
 
 
 print ('Reading path of training data...')
-Generator_Train_Noisy_paths = gen_flist('/home/zlc/masks-fusion/data_txt/tr.txt')
+Generator_Train_Noisy_paths = gen_flist('your path/masks-fusion/data_txt/tr.txt')
 random.shuffle(Generator_Train_Noisy_paths)
 
 print ('Enhancement-net constructuring...')
@@ -106,7 +106,7 @@ TBM_mask = Activation('sigmoid')(x2)
 
 ge_model = Model(inputs=data, outputs=[IRM_mask, TBM_mask])
 '''
-ge_model=load_model('/home/zlc/masks-fusion/model/SE_MTL1_IRM_TBM.h5')
+ge_model=load_model('your path/masks-fusion/model/SE_MTL1_IRM_TBM.h5')
 ge_model.summary()
 
 print ('PESQ-net constructuring...')
@@ -138,7 +138,7 @@ Score=DenseSN(1)(D2)
 
 Discriminator = Model(outputs=Score, inputs=_input)
 '''
-Discriminator = load_model('/home/zlc/masks-fusion/model/PESQ_net.h5',custom_objects={'ConvSN2D':ConvSN2D,'DenseSN':DenseSN})
+Discriminator = load_model('your path/masks-fusion/model/PESQ_net.h5',custom_objects={'ConvSN2D':ConvSN2D,'DenseSN':DenseSN})
 Discriminator.summary()
 
 #### Combine the two networks to become MetricGAN
@@ -164,4 +164,4 @@ for current_epoch in np.arange(1, epoch+1):
     random.shuffle(Generator_Train_Noisy_paths)
     g = generator(Generator_Train_Noisy_paths[0:num_sample])
     MetricGAN.fit_generator(g, steps_per_epoch=num_sample, epochs=1, verbose=1, max_queue_size=1, workers=1)
-    ge_model.save('/home/zlc/masks-fusion/model/test2.h5')
+    ge_model.save('your path/masks-fusion/model/test2.h5')

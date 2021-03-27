@@ -8,7 +8,7 @@ from numpy.fft import rfft, irfft
 from scipy import signal
 from scipy.io.wavfile import write as wav_write
 
-from fgnt.utils import segment_axis
+from support.utils import segment_axis
 
 
 def _samples_to_stft_frames(samples, size, shift):

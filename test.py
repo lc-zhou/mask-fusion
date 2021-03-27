@@ -53,11 +53,11 @@ def gen_flist(data_dir):
     return flist
 
 print('load model....')
-ge_model = load_model('/home/zlc/masks-fusion/model/SE_MTL1_IRM_TBM.h5')
+ge_model = load_model('your path/masks-fusion/model/SE_MTL1_IRM_TBM.h5')
 ge_model.summary()
 
 print('load data for testing')
-Generator_Test_paths = gen_flist('/home/zlc/masks-fusion/data_txt/et.txt')
+Generator_Test_paths = gen_flist('your path/masks-fusion/data_txt/et.txt')
 mask_min = 0.05
 
 print('enhance the wave')
@@ -76,5 +76,5 @@ for noisy_path in Generator_Test_paths:
     E=np.squeeze(noisy_LP*mask)
     enhanced_wav=SP_to_wav(E.T,Nphase, signal_length)
     enhanced_wav=enhanced_wav/np.max(abs(enhanced_wav))
-    output_path = '/home/zlc/masks-fusion/enhanced/'+wave_name+'_enhanced.wav'
+    output_path = 'your path/masks-fusion/enhanced/'+wave_name+'_enhanced.wav'
     audiowrite(enhanced_wav.astype(np.float32),output_path,16000)
