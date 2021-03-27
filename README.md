@@ -5,4 +5,5 @@
 * librosa=0.6.1
 * scipy=1.1.0
 * numpy=1.14.5
+* h5py=2.8.0
 
