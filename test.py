@@ -7,7 +7,7 @@ import librosa
 import numpy as np
 import scipy
 
-def Sp_and_phase(signal, Normalization=False):        
+def Sp_and_phase(signal, Normalization=False):
     signal_length = signal.shape[0]
     n_fft = 512
     y_pad = librosa.util.fix_length(signal, signal_length + n_fft // 2)
@@ -31,7 +31,7 @@ def SP_to_wav(mag, phase, signal_length):
                            window=scipy.signal.hamming, length=signal_length)
     return result
 
-def update_mask(irm, tbm, thre=0.87, supp=2): #
+def update_mask(irm, tbm, thre=0.8, sup=0.5):
     frames = irm.shape[1]
     feq_pin = irm.shape[2]
     irm_tbm = np.zeros(irm.shape, dtype=np.float32)
@@ -42,7 +42,7 @@ def update_mask(irm, tbm, thre=0.87, supp=2): #
             if m2>=thre:
                 irm_tbm[0,i,j]=m1
             else:
-                irm_tbm[0,i,j]=m1/supp
+                irm_tbm[0,i,j]=m1*sup
     return irm_tbm
 
 def gen_flist(data_dir):
@@ -53,28 +53,25 @@ def gen_flist(data_dir):
     return flist
 
 print('load model....')
-ge_model = load_model('your path/masks-fusion/model/SE_MTL1_IRM_TBM.h5')
+ge_model = load_model('your path/mask-fusion/model/SE_MTL1_IRM_TBM.h5')
 ge_model.summary()
 
 print('load data for testing')
-Generator_Test_paths = gen_flist('your path/masks-fusion/data_txt/et.txt')
+Generator_Test_paths = gen_flist('your path/mask-fusion/file_list/et.txt')
 mask_min = 0.05
 
 print('enhance the wave')
-for noisy_path in Generator_Test_paths:
-    file_name = noisy_path.split('/')[-1]
-    env=noisy_path.split('/')[-2]
-    wave_name = file_name.split('.')[0]
-    sec=env.split('_')[1]
+for wav_name in Generator_Test_paths:
+    noisy_path = 'your path/mask-fusion/test/noisy/'+wav_name+'.wav'
     noisy = librosa.load(noisy_path,sr=16000)
     noisy_LP_normalization, Nphase, signal_length = Sp_and_phase(noisy[0], Normalization=True)
     noisy_LP, _, _= Sp_and_phase(noisy[0])
     [IRM, TBM] = ge_model.predict(noisy_LP_normalization)
-    IRM = update_mask(IRM,TBM,0.87,2)
+    IRM = update_mask(IRM,TBM,0.8,0.5)
     #IRM = ge_model.predict(noisy_LP_normalization) # for SE_IRM,SE_TBM model
     mask = np.maximum(IRM, mask_min)
     E=np.squeeze(noisy_LP*mask)
     enhanced_wav=SP_to_wav(E.T,Nphase, signal_length)
     enhanced_wav=enhanced_wav/np.max(abs(enhanced_wav))
-    output_path = 'your path/masks-fusion/enhanced/'+wave_name+'_enhanced.wav'
+    output_path = 'your path/mask-fusion/enhanced/'+wav_name+'_enhanced.wav'
     audiowrite(enhanced_wav.astype(np.float32),output_path,16000)

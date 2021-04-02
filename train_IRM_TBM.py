@@ -17,15 +17,13 @@ import random
 import scipy.io
 import subprocess
 
-def generator(file_flist):
+def generator(file_list):
     index=0
     while True:
-        noisy_path = file_flist[index]
-        file_name = noisy_path.split('/')[-1]
-        env_name = noisy_path.split('/')[-2]
-        wave_name = file_name.split('.')[0]
-        clean_path = '/workspace/CHiME3/data/audio/16kHz/isolated_ext/'+env_name+'/'+wave_name+'.CH1.Clean.wav'
-        noise_path = '/workspace/CHiME3/data/audio/16kHz/isolated_ext/'+env_name+'/'+wave_name+'.CH1.Noise.wav'
+        wav_name = file_list[index]
+        noisy_path = 'your path/mask-fusion/train/noisy/'+wav_name+'.wav'
+        clean_path = 'your path/mask-fusion/train/clean/'+wav_name+'.Clean.wav'
+        noise_path = 'your path/mask-fusion/train/noise/'+wav_name+'.Noise.wav'
         noisy = librosa.load(noisy_path,sr=16000)
         noise = librosa.load(noise_path,sr=16000)
         clean = librosa.load(clean_path,sr=16000)
@@ -68,9 +66,8 @@ def gen_flist(data_dir):
     return flist
 
 random.seed(999)
-num_sample=200
+num_sample=2
 epoch=200
-mask_min=0.05
 
 data = Input(shape=(None, 257))
 
@@ -96,7 +93,7 @@ ge_model.compile(loss={'activation_1':'mse','activation_2':'binary_crossentropy'
 ge_model.summary()
 
 print('load data for training')
-Generator_Train_paths = gen_flist('your path/masks-fusion/data_txt/tr.txt')
+Generator_Train_paths = gen_flist('your path/mask-fusion/file_list/tr.txt')
 
 print('training')
 for epoch_g in np.arange(1,epoch+1):
@@ -104,7 +101,7 @@ for epoch_g in np.arange(1,epoch+1):
     random.shuffle(Generator_Train_paths)
     g = generator(Generator_Train_paths)
     ge_model.fit_generator(g, steps_per_epoch=num_sample, epochs=1, verbose=1, max_queue_size=1, workers=1)
-    ge_model.save('your path/masks-fusion/model/test1.h5')
+    ge_model.save('your path/mask-fusion/model/test1.h5')
 
 
 

@@ -25,18 +25,16 @@ import subprocess
 random.seed(999)
 Target_score=np.asarray([1.0])
 epoch=200
-num_sample=200
+num_sample=2
 mask_min = 0.05
 
 def generator(file_list):
     index=0
     while True:
-        noisy_path = file_list[index]
-        file_name = noisy_path.split('/')[-1]
-        env_name = noisy_path.split('/')[-2]
-        wave_name = file_name.split('.')[0]
-        clean_path = '/workspace/CHiME3/data/audio/16kHz/isolated_ext/'+env_name+'/'+wave_name+'.CH1.Clean.wav'
-        noise_path = '/workspace/CHiME3/data/audio/16kHz/isolated_ext/'+env_name+'/'+wave_name+'.CH1.Noise.wav'
+        wav_name = file_list[index]
+        noisy_path = 'your path/mask-fusion/train/noisy/'+wav_name+'.wav'
+        clean_path = 'your path/mask-fusion/train/clean/'+wav_name+'.Clean.wav'
+        noise_path = 'your path/mask-fusion/train/noise/'+wav_name+'.Noise.wav'
         noisy = librosa.load(noisy_path,sr=16000)
         noise = librosa.load(noise_path,sr=16000)
         clean = librosa.load(clean_path,sr=16000)
@@ -80,7 +78,7 @@ def Sp_and_phase(signal, Normalization=False):
 
 
 print ('Reading path of training data...')
-Generator_Train_Noisy_paths = gen_flist('your path/masks-fusion/data_txt/tr.txt')
+Generator_Train_Noisy_paths = gen_flist('your path/mask-fusion/file_list/tr.txt')
 random.shuffle(Generator_Train_Noisy_paths)
 
 print ('Enhancement-net constructuring...')
@@ -106,7 +104,7 @@ TBM_mask = Activation('sigmoid')(x2)
 
 ge_model = Model(inputs=data, outputs=[IRM_mask, TBM_mask])
 '''
-ge_model=load_model('your path/masks-fusion/model/SE_MTL1_IRM_TBM.h5')
+ge_model=load_model('your path/mask-fusion/model/SE_MTL1_IRM_TBM.h5')
 ge_model.summary()
 
 print ('PESQ-net constructuring...')
@@ -138,10 +136,9 @@ Score=DenseSN(1)(D2)
 
 Discriminator = Model(outputs=Score, inputs=_input)
 '''
-Discriminator = load_model('your path/masks-fusion/model/PESQ_net.h5',custom_objects={'ConvSN2D':ConvSN2D,'DenseSN':DenseSN})
+Discriminator = load_model('your path/mask-fusion/model/PESQ_net.h5',custom_objects={'ConvSN2D':ConvSN2D,'DenseSN':DenseSN})
 Discriminator.summary()
 
-#### Combine the two networks to become MetricGAN
 Discriminator.trainable = False
 Clean_reference = Input(shape=(257,None,1),name='input_2')
 Noisy_LP        = Input(shape=(257,None,1),name='input_3')
@@ -164,4 +161,4 @@ for current_epoch in np.arange(1, epoch+1):
     random.shuffle(Generator_Train_Noisy_paths)
     g = generator(Generator_Train_Noisy_paths[0:num_sample])
     MetricGAN.fit_generator(g, steps_per_epoch=num_sample, epochs=1, verbose=1, max_queue_size=1, workers=1)
-    ge_model.save('your path/masks-fusion/model/test2.h5')
+    ge_model.save('your path/mask-fusion/model/test2.h5')
