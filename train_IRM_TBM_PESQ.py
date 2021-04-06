@@ -104,7 +104,7 @@ TBM_mask = Activation('sigmoid')(x2)
 
 ge_model = Model(inputs=data, outputs=[IRM_mask, TBM_mask])
 '''
-ge_model=load_model('your path/mask-fusion/model/SE_MTL1_IRM_TBM.h5')
+ge_model=load_model('your path/mask-fusion/model/test1.h5')
 ge_model.summary()
 
 print ('PESQ-net constructuring...')
@@ -152,13 +152,13 @@ Enhanced = Multiply()([Mask, Noisy_LP])
 Discriminator_input= Concatenate(axis=-1)([Enhanced, Clean_reference]) # Here the input of Discriminator is (Noisy, Clean) pair, so a clean reference is needed!!
 Predicted_score=Discriminator(Discriminator_input) 
 
-MetricGAN= Model(inputs=[ge_model.input, Noisy_LP, Clean_reference, Min_mask], outputs=[IRM_output,TBM_output,Predicted_score])
-MetricGAN.compile(loss={'activation_1':'mse','activation_2':'binary_crossentropy','model_1':'mse'}, loss_weights={'activation_1':1,'activation_2':0.1,'model_1':10}, optimizer='adam')
-MetricGAN.summary()
+mtl_model= Model(inputs=[ge_model.input, Noisy_LP, Clean_reference, Min_mask], outputs=[IRM_output,TBM_output,Predicted_score])
+mtl_model.compile(loss={'activation_1':'mse','activation_2':'binary_crossentropy','model_1':'mse'}, loss_weights={'activation_1':1,'activation_2':0.1,'model_1':10}, optimizer='adam')
+mtl_model.summary()
 ######## Model define end #########
 
 for current_epoch in np.arange(1, epoch+1):
     random.shuffle(Generator_Train_Noisy_paths)
     g = generator(Generator_Train_Noisy_paths[0:num_sample])
-    MetricGAN.fit_generator(g, steps_per_epoch=num_sample, epochs=1, verbose=1, max_queue_size=1, workers=1)
+    mtl_model.fit_generator(g, steps_per_epoch=num_sample, epochs=1, verbose=1, max_queue_size=1, workers=1)
     ge_model.save('your path/mask-fusion/model/test2.h5')
